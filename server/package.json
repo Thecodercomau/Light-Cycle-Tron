@@ -1,0 +1,18 @@
+{
+    "name": "peerjs-server-min",
+    "version": "1.1.0",
+    "description": "PeerJS signaling server with room listing, health, and metrics",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.18.2",
+        "express-rate-limit": "^7.1.5",
+        "peer": "^0.6.1"
+    }
+}
