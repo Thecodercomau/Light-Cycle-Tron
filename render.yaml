@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: light-cycle-tron-server
+    runtime: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 9000
