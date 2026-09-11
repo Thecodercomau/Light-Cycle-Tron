@@ -3148,9 +3148,11 @@
           for (const seg of p.trail) ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
           ctx.globalAlpha = 1;
         }
-        // Per-frame work is two blits plus up to 8 glowing heads, drawn at a
-        // smoothly interpolated position between the previous and current tick
-        // so movement reads at display framerate instead of 14 Hz stop-motion.
+        // Per-frame work is two blits plus up to 8 heads and a short "in-flight"
+        // streak that grows from the previous cell to the current one. The head
+        // renders EXACTLY where the simulation put it, so a turn is visible the
+        // same frame it's simulated; the streak makes the trail unfurl smoothly
+        // behind it instead of the head gliding in late (which read as lag).
         draw(view) {
           if (!view) return;
           const ctx = this.ctx, cs = this.cellSize, now = performance.now();
@@ -3159,19 +3161,30 @@
           ctx.drawImage(this.trailCanvas, 0, 0);
           for (const p of view.players) {
             if (!p.alive) continue;
-            let ix = p.x, iy = p.y;
-            if (typeof p._prevX === 'number') {
+            const live = p._interp !== false && typeof p._prevX === 'number';
+            if (live && (p.x !== p._prevX || p.y !== p._prevY)) {
               const tickMs = (p._tickMs && p._tickMs > 0) ? p._tickMs : 70;
               let t = (now - (p._tickT || 0)) / tickMs;
               if (t < 0) t = 0; else if (t > 1) t = 1;
-              ix = p._prevX + (p.x - p._prevX) * t;
-              iy = p._prevY + (p.y - p._prevY) * t;
+              const x0 = (p._prevX + 0.5) * cs, y0 = (p._prevY + 0.5) * cs;
+              const x1 = (p.x + 0.5) * cs, y1 = (p.y + 0.5) * cs;
+              ctx.save();
+              ctx.globalAlpha = 0.85;
+              ctx.strokeStyle = p.color;
+              ctx.lineWidth = cs - 2;
+              ctx.lineCap = 'round';
+              ctx.beginPath();
+              ctx.moveTo(x0, y0);
+              ctx.lineTo(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+              ctx.stroke();
+              ctx.restore();
             }
             const boosting = p.boostTicks > 0 || p.boosting;
             ctx.save();
+            ctx.globalAlpha = 1;
             ctx.shadowColor = p.color; ctx.shadowBlur = boosting ? 22 : 14;
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(ix * cs + 1, iy * cs + 1, cs - 2, cs - 2);
+            ctx.fillRect(p.x * cs + 1, p.y * cs + 1, cs - 2, cs - 2);
             ctx.restore();
           }
         }
@@ -3310,6 +3323,14 @@
           // No interpolation during countdown: heads hold at spawn and the whole
           // spawn-cell trail is painted so the starting square stays visible.
           this.sim.players.forEach(p => { p._interp = false; p._prevX = p._prevY = null; p._tickT = 0; });
+          // Drop inputs buffered before the round (round-over/match screens) so
+          // they can't misfire at GO; presses during 3-2-1 are queued and honored
+          // on the first playing tick.
+          this.roster.forEach(r => {
+            const s = this.slots[r.id];
+            if (s && s.getIntent) s.getIntent();
+            if (s && s.getBoost) s.getBoost();
+          });
           renderer.syncTrails(this.sim);
           $('hudShrink').textContent = '';
           this.roster.forEach(r => updateBoostChip(r.id, BOOST_MAX));
@@ -3412,7 +3433,6 @@
             if (this.countdownVal < 0) {
               this.phase = 'playing';
               hideOverlay();
-              this.roster.forEach(r => { const s = this.slots[r.id]; s.getIntent(); if (s.getBoost) s.getBoost(); });
             } else {
               setOverlayText(this.countdownVal > 0 ? String(this.countdownVal) : 'GO', 'get ready', '');
             }
