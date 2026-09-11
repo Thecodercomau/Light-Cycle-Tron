@@ -33,7 +33,7 @@ const roomRegisterLimiter = rateLimit({
 
 // ===================================================================
 // ROOM LISTING -- clients POST /rooms to register, GET /rooms to list.
-// Rooms expire after 90s if not refreshed (clients should POST every 60s).
+// Rooms expire after 30s if not refreshed (clients should POST ~every 20s).
 // ===================================================================
 const rooms = new Map();
 const ROOM_TTL_MS = 30_000;
@@ -49,7 +49,7 @@ function cleanRooms() {
 setInterval(cleanRooms, ROOM_CLEAN_INTERVAL_MS);
 
 app.post('/rooms', roomRegisterLimiter, express.json(), (req, res) => {
-    const { code, playerCount, maxPlayers, hasBots, wallMode, speed, gameMode } = req.body || {};
+    const { code, playerCount, maxPlayers, hasBots, wallMode, speed, gameMode, hostName } = req.body || {};
     if (!code || typeof code !== 'string' || code.length < 4 || code.length > 32) {
         return res.status(400).json({ error: 'Invalid room code' });
     }
@@ -61,6 +61,7 @@ app.post('/rooms', roomRegisterLimiter, express.json(), (req, res) => {
         wallMode: wallMode || (existing ? existing.wallMode : 'solid'),
         speed: speed || (existing ? existing.speed : 'normal'),
         gameMode: gameMode || (existing ? existing.gameMode : 'standard'),
+        hostName: typeof hostName === 'string' && hostName ? String(hostName).slice(0, 16) : (existing ? existing.hostName : null),
         hasBots: !!hasBots,
         created: existing ? existing.created : Date.now(),
         lastSeen: Date.now(),
@@ -78,6 +79,7 @@ app.get('/rooms', (_req, res) => {
         speed: r.speed,
         gameMode: r.gameMode || 'standard',
         hasBots: r.hasBots,
+        hostName: r.hostName || null,
         age: Math.round((Date.now() - r.created) / 1000),
     }));
     res.set('Cache-Control', 'public, max-age=10');

@@ -1348,6 +1348,164 @@
       border-color: var(--accent-2);
     }
 
+    /* ---------- Settings ---------- */
+    .settings-panel {
+      width: 640px;
+    }
+
+    .settings-section {
+      border-top: 1px dashed var(--panel-border);
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .settings-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--accent);
+    }
+
+    .settings-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .settings-row .goal {
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    .gear-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 50;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--panel-border);
+      background: linear-gradient(160deg, var(--panel-bg), var(--panel-bg-soft));
+      color: var(--text-dim);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, transform 0.15s;
+    }
+
+    .gear-btn:hover {
+      border-color: var(--accent-2);
+      color: var(--accent-2);
+      transform: rotate(30deg);
+    }
+
+    .gear-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ---------- CRT / scanline overlay ---------- */
+    #crtOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      pointer-events: none;
+      display: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0px, rgba(0, 0, 0, 0.22) 1px, transparent 1px, transparent 3px),
+        radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.34) 100%);
+      mix-blend-mode: multiply;
+    }
+
+    body.crt #crtOverlay {
+      display: block;
+    }
+
+    /* ---------- Network badge ---------- */
+    #netBadge {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: var(--accent-2);
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      padding: 2px 7px;
+      display: none;
+    }
+
+    #netBadge.show {
+      display: inline-block;
+    }
+
+    #netBadge.laggy {
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+
+    #hudShrink {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--danger);
+      width: 100%;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .server-status {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .server-status .sdot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      flex: 0 0 auto;
+    }
+
+    .server-status.online {
+      color: var(--accent-2);
+    }
+
+    .server-status.online .sdot {
+      background: var(--accent-2);
+      box-shadow: 0 0 8px var(--accent-2);
+    }
+
+    .server-status.offline {
+      color: var(--danger);
+    }
+
+    .server-status.offline .sdot {
+      background: var(--danger);
+      box-shadow: 0 0 8px var(--danger);
+    }
+
+    .lobby-spectators {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      text-align: right;
+      min-height: 12px;
+    }
+
+    .menu-title-wrap {
+      position: relative;
+      text-align: center;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       * {
         animation: none !important;
@@ -1359,6 +1517,14 @@
 
 <body>
   <div id="bgGlow"></div>
+  <div id="crtOverlay"></div>
+  <button id="settingsGear" class="gear-btn" title="Settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="3.2" />
+      <path
+        d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34h.08A1.7 1.7 0 0 0 10.04 3.1V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.08a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1.03z" />
+    </svg>
+  </button>
   <div id="app">
 
     <!-- MENU -->
@@ -1471,6 +1637,7 @@
           <div class="choice-card-desc">Got a room code? Drop in and play.</div>
         </button>
       </div>
+      <div class="server-status" id="serverStatus"><span class="sdot"></span><span id="serverStatusText">checking server&hellip;</span></div>
       <button class="btn ghost" id="onlineChoiceBack">&larr; Back</button>
     </div>
 
@@ -1518,6 +1685,14 @@
           <div class="toggle-row">
             <div class="field-label">Infinite Boosts (starting default)</div>
             <div class="toggle" id="hostInfiniteBoostsToggle">
+              <div class="knob"></div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="toggle-row">
+            <div class="field-label">List room publicly</div>
+            <div class="toggle" id="hostPublicToggle">
               <div class="knob"></div>
             </div>
           </div>
@@ -1583,6 +1758,91 @@
         </div>
       </div>
     </div>
+    <!-- SETTINGS -->
+    <div class="screen" id="screen-settings" style="display:none;">
+      <div class="panel settings-panel">
+        <h2>SETTINGS</h2>
+
+        <div class="settings-section">
+          <div class="settings-title">PLAYER</div>
+          <div class="field">
+            <div class="field-label">Default Name</div>
+            <input class="text-input" id="setName" maxlength="16" placeholder="Player">
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">GRAPHICS</div>
+          <div class="settings-row">
+            <div class="goal">CRT scanlines &amp; vignette</div>
+            <div class="toggle" id="setCrt"><div class="knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Animated background glow</div>
+            <div class="toggle" id="setGlow"><div class="knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Scoreboard / HUD roster</div>
+            <div class="toggle" id="setHud"><div class="knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Board style</div>
+            <div class="segmented" id="setGridStyle"></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Fullscreen (also press F in-game)</div>
+            <button class="btn ghost" id="setFullscreen" style="padding:8px 14px;">Toggle</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">GAMEPLAY DEFAULTS</div>
+          <div class="settings-row">
+            <div class="goal">Game mode</div>
+            <div class="segmented" id="setMode"></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Board size</div>
+            <div class="segmented" id="setBoard"></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Speed</div>
+            <div class="segmented" id="setSpeed"></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Win score</div>
+            <div class="segmented" id="setWinScore"></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Walls</div>
+            <div class="segmented" id="setWall"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-title">ONLINE</div>
+          <div class="settings-row">
+            <div class="goal">Host publicly-listed rooms by default</div>
+            <div class="toggle" id="setPublic"><div class="knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Show live ping in matches (P2P)</div>
+            <div class="toggle" id="setPing"><div class="knob"></div></div>
+          </div>
+          <div class="settings-row">
+            <div class="goal">Hosted signaling server</div>
+            <div class="goal" id="setServer" style="text-align:right;font-size:10px;">detecting&hellip;</div>
+          </div>
+        </div>
+
+        <div class="error-msg" id="settingsError"></div>
+        <div class="btn-row">
+          <button class="btn ghost" id="settingsReset">Reset to Defaults</button>
+          <button class="btn primary" id="settingsDone">Done</button>
+        </div>
+      </div>
+    </div>
+
     <div class="screen" id="screen-connecting" style="display:none;">
       <div class="panel connecting-panel">
         <h2 id="connectingTitle">CONNECTING</h2>
@@ -1608,6 +1868,7 @@
           <button class="btn ghost" id="lobbyCopy">Copy</button>
         </div>
         <div class="lobby-list" id="lobbyList"></div>
+        <div class="lobby-spectators" id="lobbySpectatorNote"></div>
         <div class="field" id="hostInfiniteField" style="display:none;">
           <div class="toggle-row">
             <div class="field-label">Infinite Boosts (set all)</div>
@@ -1644,7 +1905,9 @@
       <div id="gameScreenInner">
         <div id="hud">
           <div id="hudCenter">FIRST TO 5</div>
+          <div id="netBadge"></div>
           <div id="hudRoster"></div>
+          <div id="hudShrink"></div>
         </div>
         <div id="canvasWrap">
           <canvas id="canvas"></canvas>
@@ -1748,6 +2011,7 @@
       function switchScreen(id) {
         document.querySelectorAll('.screen').forEach(el => el.style.display = 'none');
         $('screen-' + id).style.display = 'flex';
+        $('settingsGear').style.display = (id === 'menu' || id === 'settings') ? 'flex' : 'none';
       }
       function generateRoomCode() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -1763,8 +2027,56 @@
       function formatKey(k) {
         const map = { arrowup: '\u2191', arrowdown: '\u2193', arrowleft: '\u2190', arrowright: '\u2192', ' ': 'SPACE' };
         if (map[k]) return map[k];
-        return k.length === 1 ? k.toUpperCase() : k.toUpperCase();
+        return k.toUpperCase();
       }
+
+      // ===================================================================
+      // SETTINGS (persisted in localStorage) -- applied to graphics, gameplay
+      // defaults, and online behaviour.
+      // ===================================================================
+      const SETTINGS_KEY = 'tron-settings-v1';
+      const DEFAULT_SETTINGS = Object.freeze({
+        name: '',
+        crt: false,
+        glow: true,
+        hud: true,
+        gridStyle: 'grid',
+        gameMode: 'standard',
+        boardSize: 'medium',
+        speed: 'normal',
+        winScore: 5,
+        wallMode: 'solid',
+        roomPublic: true,
+        ping: false,
+      });
+      const SETTINGS_GRID_STYLES = [
+        { value: 'grid', label: 'GRID' },
+        { value: 'dots', label: 'DOTS' },
+        { value: 'plain', label: 'PLAIN' },
+      ];
+      let settings = null;
+      function loadSettings() {
+        let parsed = {};
+        try { parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}; } catch (e) { parsed = {}; }
+        settings = Object.assign({}, DEFAULT_SETTINGS, parsed);
+        return settings;
+      }
+      function saveSettings() {
+        try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings || DEFAULT_SETTINGS)); } catch (e) { }
+      }
+      function applySettings() {
+        if (!settings) loadSettings();
+        document.body.classList.toggle('crt', !!settings.crt);
+        $('bgGlow').style.display = settings.glow ? 'block' : 'none';
+        $('hudRoster').style.display = settings.hud ? '' : 'none';
+        $('netBadge').classList.toggle('show', !!settings.ping);
+      }
+      function toggleSettingRow(toggleEl, getter, setter) {
+        toggleEl.classList.toggle('on', !!getter());
+        toggleEl.addEventListener('click', () => { setter(!getter()); toggleEl.classList.toggle('on', !!getter()); saveSettings(); });
+      }
+      loadSettings();
+      applySettings();
 
       // spawn points evenly distributed around the board perimeter, starting
       // at left-mid and walking clockwise -- for n=2 this lands exactly on
@@ -1866,7 +2178,7 @@
           this.boostPending = false;
           this.active = true;
           this._handler = (e) => {
-            if (!this.active) return;
+            if (!this.active || e.repeat) return;
             const k = e.key.toLowerCase();
             for (const dir of Object.keys(this.scheme)) {
               if (this.scheme[dir].includes(k)) {
@@ -1890,7 +2202,7 @@
           this.onBoost = onBoost;
           this.active = false;
           window.addEventListener('keydown', (e) => {
-            if (!this.active) return;
+            if (!this.active || e.repeat) return;
             const k = e.key.toLowerCase();
             for (const dir of Object.keys(this.scheme)) {
               if (this.scheme[dir].includes(k)) {
@@ -2155,20 +2467,18 @@
           seen[idx(sx, sy)] = 1;
           const queue = [sx, sy]; // flat [x0,y0,x1,y1,...] queue -- avoids object/array-of-pairs churn
           let qHead = 0, count = 0;
+          const tryCell = (nx, ny) => {
+            if (wallMode === 'wrap') { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
+            else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) return;
+            const ni = idx(nx, ny);
+            if (seen[ni]) return;
+            seen[ni] = 1;
+            if (grid[ni] !== 1) queue.push(nx, ny);
+          };
           while (qHead < queue.length && count < cap) {
             const x = queue[qHead], y = queue[qHead + 1]; qHead += 2;
             count++;
-            const nb = [x + 1, y, x - 1, y, x, y + 1, x, y - 1];
-            for (let i = 0; i < 8; i += 2) {
-              let nx = nb[i], ny = nb[i + 1];
-              if (wallMode === 'wrap') { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
-              else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
-              const ni = idx(nx, ny);
-              if (seen[ni]) continue;
-              seen[ni] = 1;
-              if (grid[ni] === 1) continue;
-              queue.push(nx, ny);
-            }
+            tryCell(x + 1, y); tryCell(x - 1, y); tryCell(x, y + 1); tryCell(x, y - 1);
           }
           return count;
         }
@@ -2227,24 +2537,23 @@
           }
 
           let qHead = 0;
+          const nbVisit = (nx, ny, o, d) => {
+            if (wallMode === 'wrap') { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
+            else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) return;
+            const ni = idx(nx, ny);
+            if (grid[ni] === 1) return;
+            if (dist[ni] === -1) {
+              owner[ni] = o; dist[ni] = d + 1;
+              queue[qTail++] = ni;
+            } else if (dist[ni] === d + 1 && owner[ni] !== o && owner[ni] !== -2) {
+              owner[ni] = -2;
+            }
+          };
           while (qHead < qTail) {
             const i = queue[qHead++];
             const x = i % cols, y = (i - x) / cols;
             const d = dist[i], o = owner[i];
-            const nb = [x + 1, y, x - 1, y, x, y + 1, x, y - 1];
-            for (let k = 0; k < 8; k += 2) {
-              let nx = nb[k], ny = nb[k + 1];
-              if (wallMode === 'wrap') { nx = (nx + cols) % cols; ny = (ny + rows) % rows; }
-              else if (nx < 0 || nx >= cols || ny < 0 || ny >= rows) continue;
-              const ni = idx(nx, ny);
-              if (grid[ni] === 1) continue;
-              if (dist[ni] === -1) {
-                owner[ni] = o; dist[ni] = d + 1;
-                queue[qTail++] = ni;
-              } else if (dist[ni] === d + 1 && owner[ni] !== o && owner[ni] !== -2) {
-                owner[ni] = -2;
-              }
-            }
+            nbVisit(x + 1, y, o, d); nbVisit(x - 1, y, o, d); nbVisit(x, y + 1, o, d); nbVisit(x, y - 1, o, d);
           }
 
           let myCount = 0;
@@ -2332,6 +2641,7 @@
           this.shrinkTiles = new Set();
           this._initialCols = settings.cols;
           this._initialRows = settings.rows;
+          this.shrinkLevel = 0;
           this.reset();
         }
         reset() {
@@ -2339,6 +2649,7 @@
           this.players = this.roster.map((r, i) => new Player(r.id, r.color, spawns[i].x, spawns[i].y, spawns[i].dir, r.team, r.name, r.infiniteBoost));
           this.tick = 0; this.over = false; this.winnerId = null; this.winnerTeam = null;
           this.shrinkTiles.clear();
+          this.shrinkLevel = 0;
           this.shrinkTimer = this.settings.gameMode === 'shrinking' ? SHRINK_INTERVAL_TICKS : -1;
         }
         applyIntent(p, intent) {
@@ -2404,10 +2715,11 @@
             this.shrinkTimer--;
             if (this.shrinkTimer <= 0) {
               this.shrinkTimer = SHRINK_INTERVAL_TICKS;
-              const amount = SHRINK_AMOUNT;
+              this.shrinkLevel++;
+              const amount = Math.min(SHRINK_AMOUNT * this.shrinkLevel, Math.floor(Math.min(this.settings.cols, this.settings.rows) / 2));
               const cols = this.settings.cols, rows = this.settings.rows;
               for (let y = 0; y < rows; y++) {
-                for (let x = 0; x < rows; x++) {
+                for (let x = 0; x < cols; x++) {
                   if (x < amount || x >= cols - amount || y < amount || y >= rows - amount) {
                     this.shrinkTiles.add(x + ',' + y);
                   }
@@ -2434,58 +2746,91 @@
       // RENDERER
       // ===================================================================
       class Renderer {
-        constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); this.cellSize = 14; }
+        constructor(canvas) {
+          this.canvas = canvas;
+          this.ctx = canvas.getContext('2d');
+          this.cellSize = 14;
+          this.cols = 0;
+          this.rows = 0;
+          // Static layers are drawn once per simulation tick, not every frame.
+          this.gridCanvas = document.createElement('canvas');
+          this.gridCtx = this.gridCanvas.getContext('2d');
+          this.trailCanvas = document.createElement('canvas');
+          this.trailCtx = this.trailCanvas.getContext('2d');
+        }
         configure(cols, rows, cellSize) {
           this.cols = cols; this.rows = rows; this.cellSize = cellSize;
-          this.canvas.width = cols * cellSize;
-          this.canvas.height = rows * cellSize;
+          const w = cols * cellSize, h = rows * cellSize;
+          this.canvas.width = w; this.canvas.height = h;
+          this.gridCanvas.width = w; this.gridCanvas.height = h;
+          this.trailCanvas.width = w; this.trailCanvas.height = h;
+          this._buildGrid();
         }
-        draw(view) {
-          if (!view) return;
-          const ctx = this.ctx, cs = this.cellSize;
-          ctx.fillStyle = '#050a12';
-          ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-          ctx.lineWidth = 1;
+        _buildGrid() {
+          const g = this.gridCtx, cs = this.cellSize;
+          const style = (settings && settings.gridStyle) || 'grid';
+          g.fillStyle = '#050a12';
+          g.fillRect(0, 0, this.gridCanvas.width, this.gridCanvas.height);
+          if (style === 'plain') return;
+          g.lineWidth = 1;
+          if (style === 'dots') {
+            g.fillStyle = 'rgba(255,255,255,0.09)';
+            for (let x = 0; x < this.cols; x++) {
+              for (let y = 0; y < this.rows; y++) {
+                g.fillRect(x * cs + 0.5, y * cs + 0.5, 2, 2);
+              }
+            }
+            return;
+          }
           for (let x = 0; x <= this.cols; x++) {
-            ctx.strokeStyle = (x % 5 === 0) ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.035)';
-            ctx.beginPath(); ctx.moveTo(x * cs + 0.5, 0); ctx.lineTo(x * cs + 0.5, this.canvas.height); ctx.stroke();
+            g.strokeStyle = (x % 5 === 0) ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.035)';
+            g.beginPath(); g.moveTo(x * cs + 0.5, 0); g.lineTo(x * cs + 0.5, this.gridCanvas.height); g.stroke();
           }
           for (let y = 0; y <= this.rows; y++) {
-            ctx.strokeStyle = (y % 5 === 0) ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.035)';
-            ctx.beginPath(); ctx.moveTo(0, y * cs + 0.5); ctx.lineTo(this.canvas.width, y * cs + 0.5); ctx.stroke();
+            g.strokeStyle = (y % 5 === 0) ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.035)';
+            g.beginPath(); g.moveTo(0, y * cs + 0.5); g.lineTo(this.gridCanvas.width, y * cs + 0.5); g.stroke();
           }
-          const DEAD_FADE_MS = 900;
+        }
+        // Rebuilds the static trail / wall layer. Call once per sim tick (never on
+        // every rAF) -- this replaces the old "redraw every occupied cell 60px/s".
+        syncTrails(view) {
+          const ctx = this.trailCtx, cs = this.cellSize;
+          ctx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
+          if (!view) return;
           if (view.shrinkTiles) {
             ctx.fillStyle = 'rgba(255,20,50,0.28)';
             for (const key of view.shrinkTiles) {
-              const [sx, sy] = key.split(',').map(Number);
+              const i = key.indexOf(',');
+              const sx = parseInt(key, 10), sy = parseInt(key.slice(i + 1), 10);
               ctx.fillRect(sx * cs + 1, sy * cs + 1, cs - 2, cs - 2);
             }
           }
-          for (const p of view.players) {
+          for (const p of view.players || []) {
+            const dead = !p.alive;
             const dark = darkenHex(p.color, 90);
-            let fade = 1;
-            if (!p.alive) {
-              if (p._deadAt == null) p._deadAt = performance.now();
-              fade = Math.max(0, 1 - (performance.now() - p._deadAt) / DEAD_FADE_MS);
-            } else if (p._deadAt != null) {
-              p._deadAt = null;
-            }
-            if (fade <= 0) continue;
             for (const seg of p.trail) {
-              if (seg.boost) { ctx.fillStyle = dark; ctx.globalAlpha = 0.4 * fade; }
-              else { ctx.fillStyle = p.color; ctx.globalAlpha = 0.85 * fade; }
+              ctx.globalAlpha = dead ? 0.22 : (seg.boost ? 0.4 : 0.85);
+              ctx.fillStyle = (seg.boost && !dead) ? dark : p.color;
               ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
             }
-            ctx.globalAlpha = 1;
-            if (p.alive) {
-              const boosting = p.boostTicks > 0 || p.boosting;
-              ctx.save();
-              ctx.shadowColor = p.color; ctx.shadowBlur = boosting ? 22 : 14;
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(p.x * cs + 1, p.y * cs + 1, cs - 2, cs - 2);
-              ctx.restore();
-            }
+          }
+          ctx.globalAlpha = 1;
+        }
+        // Per-frame work is now just two blits plus up to 8 glowing heads.
+        draw(view) {
+          if (!view) return;
+          const ctx = this.ctx, cs = this.cellSize;
+          ctx.globalAlpha = 1;
+          ctx.drawImage(this.gridCanvas, 0, 0);
+          ctx.drawImage(this.trailCanvas, 0, 0);
+          for (const p of view.players) {
+            if (!p.alive) continue;
+            const boosting = p.boostTicks > 0 || p.boosting;
+            ctx.save();
+            ctx.shadowColor = p.color; ctx.shadowBlur = boosting ? 22 : 14;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(p.x * cs + 1, p.y * cs + 1, cs - 2, cs - 2);
+            ctx.restore();
           }
         }
       }
@@ -2551,7 +2896,9 @@
       }
       function registerRoom() {
         if (!hostState || !hostState.roomCode) return;
+        if (hostState.ui && hostState.ui.publicRoom === false) return;
         const players = hostState.roster.filter(r => r.connected);
+        const hostEntry = hostState.roster.find(r => r.isHost);
         fetch(roomApiUrl() + '/rooms', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2563,6 +2910,7 @@
             wallMode: hostState.ui.wallMode,
             speed: hostState.ui.speed,
             gameMode: hostState.ui.gameMode || 'standard',
+            hostName: hostEntry ? hostEntry.name : null,
           }),
         }).catch(() => {});
         if (!roomRegisterInterval) {
@@ -2601,6 +2949,7 @@
           renderRoster(roster);
           hudCenterText(settings);
           currentView = this.sim;
+          renderer.syncTrails(this.sim);
         }
         start() {
           this.running = true;
@@ -2613,6 +2962,8 @@
         stop() { this.running = false; }
         beginCountdown() {
           this.sim.reset();
+          renderer.syncTrails(this.sim);
+          $('hudShrink').textContent = '';
           this.roster.forEach(r => updateBoostChip(r.id, BOOST_MAX));
           this.phase = 'countdown';
           this.countdownVal = COUNTDOWN_TICKS;
@@ -2643,6 +2994,7 @@
           }
 
           showOverlay();
+          $('hudShrink').textContent = '';
           let msg = { type: 'score', score: { ...this.score } };
           if (matchWinner || matchWinnerTeam) {
             this.phase = 'matchover';
@@ -2674,7 +3026,17 @@
         }
         resetMatch() {
           this.roster.forEach(r => { this.score[r.id] = 0; updateScoreChip(r.id, 0); });
+          if (this.onBroadcast) this.onBroadcast({ type: 'score', score: { ...this.score }, phase: 'reset' });
           this.beginCountdown();
+        }
+        updateShrinkDisplay() {
+          const el = $('hudShrink');
+          if (!el) return;
+          if (this.settings.gameMode === 'shrinking' && this.sim.shrinkTimer >= 0) {
+            el.textContent = 'WALLS IN ' + ((this.sim.shrinkTimer * this.settings.tickMs) / 1000).toFixed(1) + 's';
+          } else {
+            el.textContent = '';
+          }
         }
         broadcastFrame() {
           if (!this.onBroadcast) return;
@@ -2686,6 +3048,7 @@
               newSegs: p.addedThisTick,
             })),
             shrinkTiles: this.sim.shrinkTiles.size ? Array.from(this.sim.shrinkTiles) : null,
+            shrinkTimer: this.sim.shrinkTimer >= 0 ? this.sim.shrinkTimer : null,
           });
         }
         broadcastPhase() {
@@ -2717,8 +3080,10 @@
             });
             this.sim.step(intents, boosts);
             recordReplayFrame(this.sim);
+            renderer.syncTrails(this.sim);
             this.sim.players.forEach(p => updateBoostChip(p.id, p.boostsLeft));
             this.broadcastFrame();
+            this.updateShrinkDisplay();
             if (this.sim.over) this.endRound();
             return;
           }
@@ -2753,6 +3118,7 @@
           renderRoster(roster);
           hudCenterText(settings);
           currentView = this;
+          renderer.syncTrails(this);
         }
         onFrame(msg) {
           for (const pd of msg.players) {
@@ -2766,6 +3132,11 @@
             if (typeof pd.boostsLeft === 'number') updateBoostChip(pd.id, pd.boostsLeft);
           }
           if (msg.shrinkTiles) this.shrinkTiles = new Set(msg.shrinkTiles);
+          if (msg.shrinkTimer != null && this.settings.gameMode === 'shrinking') {
+            const el = $('hudShrink');
+            if (el) el.textContent = 'WALLS IN ' + ((msg.shrinkTimer * (this.settings.tickMs || 70)) / 1000).toFixed(1) + 's';
+          }
+          renderer.syncTrails(this);
         }
         onPhase(msg) {
           if (msg.phase === 'countdown') {
@@ -2778,6 +3149,8 @@
               p.trail = [{ x: s.x, y: s.y, boost: false }];
               p.x = s.x; p.y = s.y; p.alive = true; p.boosting = false;
             });
+            renderer.syncTrails(this);
+            $('hudShrink').textContent = '';
             this.roster.forEach(r => updateBoostChip(r.id, BOOST_MAX));
             showOverlay();
             setOverlayText(msg.countdownVal > 0 ? String(msg.countdownVal) : 'GO', 'get ready', '');
@@ -2788,6 +3161,7 @@
         onScore(msg) {
           this.score = msg.score;
           this.roster.forEach(r => updateScoreChip(r.id, this.score[r.id] || 0));
+          if (msg.phase === 'reset') { hideOverlay(); return; }
           showOverlay();
           if (msg.phase === 'matchover') {
             const text = msg.matchWinnerName ? (msg.matchWinnerName.toUpperCase() + ' WINS') : ('TEAM ' + msg.matchWinnerTeam + ' WINS');
@@ -2815,6 +3189,35 @@
       const guestSendController = new NetworkSendController(joinOwnScheme,
         dir => { if (hostConn && hostConn.open) hostConn.send({ type: 'input', dir }); },
         () => { if (hostConn && hostConn.open) hostConn.send({ type: 'boost' }); });
+
+      // ---- LIVE PING (guest -> host round-trip, shown in the HUD) ----
+      let pingInterval = null;
+      let lastPingSentAt = 0;
+      function startPingLoop() {
+        stopPingLoop();
+        if (!settings || !settings.ping) return;
+        $('netBadge').classList.add('show');
+        updatePingBadge(null);
+        pingInterval = setInterval(() => {
+          if (hostConn && hostConn.open) {
+            lastPingSentAt = Date.now();
+            hostConn.send({ type: 'ping', t: lastPingSentAt });
+          }
+        }, 2000);
+      }
+      function stopPingLoop() {
+        if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
+        lastPingSentAt = 0;
+        $('netBadge').classList.remove('show');
+        $('netBadge').textContent = '';
+      }
+      function updatePingBadge(rtt) {
+        const el = $('netBadge');
+        if (!el) return;
+        if (rtt == null) { el.textContent = '\u2026'; el.classList.remove('laggy'); return; }
+        el.textContent = rtt + 'ms';
+        el.classList.toggle('laggy', rtt >= 150);
+      }
 
       function peerAvailable() { return typeof Peer !== 'undefined'; }
 
@@ -2870,6 +3273,7 @@
 
       function teardownNetwork() {
         guestSendController.active = false;
+        stopPingLoop();
         unregisterRoom();
         if (peer) { try { peer.destroy(); } catch (e) { } peer = null; }
         hostState = null; guestState = null; hostConn = null; clientView = null;
@@ -2977,6 +3381,7 @@
             // Wait for first message to determine if spectator
           });
           conn.on('data', (data) => {
+            if (data && data.type === 'ping') { if (conn.open) conn.send({ type: 'pong', t: data.t }); return; }
             if (firstMessage && data.type === 'spectator') {
               firstMessage = false;
               if (!hostState._spectators) hostState._spectators = {};
@@ -2994,7 +3399,7 @@
               const half = Math.ceil(hostState.ui.maxPlayers / 2);
               const team = hostState.ui.teams ? (idx < half ? 'A' : 'B') : null;
               const pid = 'p' + (idx + 1);
-              hostState.roster.push({ id: pid, color: PALETTE[idx], name: 'Player ' + (idx + 1), team, isHost: false, ready: false, connected: true, infiniteBoost: hostState.ui.infiniteBoosts });
+              hostState.roster.push({ id: pid, color: PALETTE[idx], name: sanitizeName((data && data.name) || ('Player ' + (idx + 1))), team, isHost: false, ready: false, connected: true, infiniteBoost: hostState.ui.infiniteBoosts });
               hostState.connections[conn.peer] = { conn, playerId: pid };
               conn.send({ type: 'welcome', playerId: pid, color: PALETTE[idx], roster: hostState.roster.map(r => ({ id: r.id, color: r.color, name: r.name, team: r.team, ready: r.ready, isHost: r.isHost, isBot: !!r.isBot, connected: r.connected, infiniteBoost: !!r.infiniteBoost })), ui: hostState.ui, spectator: false });
               broadcastLobby();
@@ -3009,23 +3414,26 @@
           conn.on('close', () => {
             const slot = hostState.connections && hostState.connections[conn.peer];
             if (slot && slot.playerId) handleGuestDisconnect(slot.playerId);
+            else if (hostState._spectators && hostState._spectators[conn.peer]) {
+              addSystemChat(hostState._spectators[conn.peer].name + ' left (spectator)');
+              delete hostState._spectators[conn.peer];
+              broadcastLobby();
+              renderLobbyHost();
+            }
           });
           conn.on('error', () => {
             const slot = hostState.connections && hostState.connections[conn.peer];
             if (slot && slot.playerId) handleGuestDisconnect(slot.playerId);
+            else if (hostState._spectators && hostState._spectators[conn.peer]) {
+              addSystemChat(hostState._spectators[conn.peer].name + ' left (spectator)');
+              delete hostState._spectators[conn.peer];
+              broadcastLobby();
+              renderLobbyHost();
+            }
           });
         });
       }
       function handleHostMessage(pid, data) {
-        if (data.type === 'spectator') {
-          const r = hostState.roster.find(r => r.id === pid);
-          if (r) r.name = sanitizeName(data.name);
-          // Spectators don't take a slot; they get frame data passively
-          addSystemChat(sanitizeName(data.name) + ' is spectating');
-          broadcastToAll({ type: 'lobby', roster: hostState.roster.map(r => ({ id: r.id, color: r.color, name: r.name, team: r.team, ready: r.ready, isHost: r.isHost, isBot: !!r.isBot, connected: r.connected, infiniteBoost: !!r.infiniteBoost })), ui: hostState.ui, spectatorCount: (hostState._spectatorCount = (hostState._spectatorCount || 0) + 1) });
-          renderLobbyHost();
-          return;
-        }
         if (data.type === 'input') {
           const slot = hostState.remoteSlots && hostState.remoteSlots[pid];
           if (slot) slot.pending = data.dir;
@@ -3096,7 +3504,7 @@
           if (hostState.connections[k].playerId === pid) { delete hostState.connections[k]; break; }
         }
         if (hostState._mutedPlayers) hostState._mutedPlayers.delete(pid);
-        delete hostState.remoteSlots[pid];
+        if (hostState.remoteSlots) delete hostState.remoteSlots[pid];
         if (activeMatch) {
           if (activeMatch.phase === 'playing') {
             const sp = activeMatch.sim.players.find(p => p.id === pid);
@@ -3233,9 +3641,12 @@
         const allReady = hostState.roster.every(r => r.isHost || r.isBot || r.ready);
         $('lobbyStart').disabled = !allReady || hostState.roster.length < 2;
         $('hostAddBot').disabled = hostState.roster.length >= hostState.ui.maxPlayers;
+        const specCount = hostState._spectators ? Object.keys(hostState._spectators).length : 0;
+        $('lobbySpectatorNote').textContent = specCount ? (specCount + ' spectator' + (specCount === 1 ? '' : 's') + ' watching') : '';
       }
       function hostStartMatch() {
         destroyActiveControllers();
+        closeReplay();
         const settings = fullSettingsFromUi(hostState.ui);
         renderer.configure(settings.cols, settings.rows, BOARD_PRESETS[hostState.ui.boardSize].cellSize);
         const roster = hostState.roster.map(r => ({ id: r.id, color: r.color, team: r.team, name: r.name, isBot: !!r.isBot, difficulty: r.difficulty || null, infiniteBoost: !!r.infiniteBoost }));
@@ -3330,6 +3741,7 @@
           clearConnectTimeout();
           setConnectStep('handshake', 'done');
           guestState._connected = true;
+          startPingLoop();
           if (data.spectator) {
             spectatorMode = true;
             guestState.roster = data.roster || [];
@@ -3356,6 +3768,9 @@
           $('hostInfiniteField').style.display = 'none';
           switchScreen('lobby');
           renderLobbyGuest();
+        } else if (data.type === 'pong') {
+          if (lastPingSentAt) updatePingBadge(Date.now() - lastPingSentAt);
+          lastPingSentAt = 0;
         } else if (data.type === 'full') {
           teardownNetwork();
           switchScreen('joinSetup');
@@ -3374,6 +3789,7 @@
           guestState.roster = data.roster; guestState.ui = data.ui;
           renderLobbyGuest();
         } else if (data.type === 'starting') {
+          closeReplay();
           switchScreen('game');
           if (spectatorMode) {
             setGameControlsStrip('SPECTATING');
@@ -3408,6 +3824,7 @@
             $('voteTally').textContent = '';
             if (data.replayAvailable && data.replayFrames) {
               replayFrames = data.replayFrames;
+              replaySettings = data.replaySettings || clientView && clientView.settings;
               setTimeout(() => {
                 if (confirm('Match complete! Download replay?')) {
                   downloadReplay();
@@ -3424,6 +3841,7 @@
       }
       function renderLobbyGuest() {
         const list = $('lobbyList'); list.innerHTML = '';
+        $('lobbySpectatorNote').textContent = '';
         const classic = guestState.ui && guestState.ui.gameMode === 'classic';
         guestState.roster.forEach(r => {
           const row = document.createElement('div'); row.className = 'lobby-row';
@@ -3476,17 +3894,85 @@
 
       // ---- MENU ----
       $('btnLocal').addEventListener('click', () => { switchScreen('localSetup'); initLocalSetup(); });
-      $('btnOnline').addEventListener('click', () => switchScreen('onlineChoice'));
+      $('btnOnline').addEventListener('click', () => { switchScreen('onlineChoice'); checkServerStatus(); });
       $('onlineChoiceBack').addEventListener('click', () => switchScreen('menu'));
       $('btnHost').addEventListener('click', () => { switchScreen('hostSetup'); initHostSetup(); });
-      $('btnJoin').addEventListener('click', () => { switchScreen('joinSetup'); initJoinSetup(); });
+      $('btnJoin').addEventListener('click', () => { spectatorMode = false; switchScreen('joinSetup'); initJoinSetup(); });
       $('hostBack').addEventListener('click', () => switchScreen('onlineChoice'));
       $('joinBack').addEventListener('click', () => switchScreen('onlineChoice'));
+
+      // ---- SETTINGS ----
+      function setToggle(el, on) { el.classList.toggle('on', !!on); }
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+          else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+      function initSettingsScreen() {
+        if (!settings) loadSettings();
+        $('setName').value = settings.name;
+        setToggle($('setCrt'), settings.crt);
+        setToggle($('setGlow'), settings.glow);
+        setToggle($('setHud'), settings.hud);
+        setToggle($('setPublic'), settings.roomPublic);
+        setToggle($('setPing'), settings.ping);
+        makeSegmented($('setGridStyle'), SETTINGS_GRID_STYLES, settings.gridStyle, v => {
+          settings.gridStyle = v; saveSettings(); renderer._buildGrid();
+        });
+        makeSegmented($('setMode'), GAME_MODES, settings.gameMode, v => { settings.gameMode = v; saveSettings(); });
+        makeSegmented($('setBoard'), boardOptions(), settings.boardSize, v => { settings.boardSize = v; saveSettings(); });
+        makeSegmented($('setSpeed'), speedOptions(), settings.speed, v => { settings.speed = v; saveSettings(); });
+        makeSegmented($('setWinScore'), scoreOptions(), settings.winScore, v => { settings.winScore = v; saveSettings(); });
+        makeSegmented($('setWall'), wallOptions(), settings.wallMode, v => { settings.wallMode = v; saveSettings(); });
+        $('setServer').textContent = 'https://' + DEFAULT_PEER_CONFIG.host;
+        $('settingsError').textContent = '';
+      }
+      $('settingsGear').addEventListener('click', () => { switchScreen('settings'); initSettingsScreen(); });
+      $('settingsGear').style.display = 'flex';
+      $('settingsDone').addEventListener('click', () => { switchScreen('menu'); });
+      $('settingsReset').addEventListener('click', () => {
+        settings = Object.assign({}, DEFAULT_SETTINGS);
+        saveSettings();
+        initSettingsScreen();
+        applySettings();
+        $('settingsError').textContent = 'Settings reset to defaults.';
+      });
+      $('setFullscreen').addEventListener('click', toggleFullscreen);
+      $('setName').addEventListener('input', () => { settings.name = sanitizeName($('setName').value); saveSettings(); });
+      toggleSettingRow($('setCrt'), () => settings.crt, v => { settings.crt = v; saveSettings(); applySettings(); });
+      toggleSettingRow($('setGlow'), () => settings.glow, v => { settings.glow = v; saveSettings(); applySettings(); });
+      toggleSettingRow($('setHud'), () => settings.hud, v => { settings.hud = v; saveSettings(); applySettings(); $('hudRoster').style.display = v ? '' : 'none'; });
+      toggleSettingRow($('setPublic'), () => settings.roomPublic, v => { settings.roomPublic = v; saveSettings(); if (hostUi) hostUi.publicRoom = v; });
+      toggleSettingRow($('setPing'), () => settings.ping, v => { settings.ping = v; saveSettings(); applySettings(); });
 
       // ---- PUBLIC ROOMS ----
       $('btnPublicRooms').addEventListener('click', () => { switchScreen('publicRooms'); refreshRoomList(); });
       $('publicRoomsBack').addEventListener('click', () => switchScreen('menu'));
       $('btnRefreshRooms').addEventListener('click', () => refreshRoomList());
+
+      async function checkServerStatus() {
+        const wrap = $('serverStatus'), text = $('serverStatusText');
+        if (!wrap || !text) return;
+        wrap.className = 'server-status';
+        text.textContent = 'checking server\u2026';
+        try {
+          const ctrl = new AbortController();
+          const to = setTimeout(() => ctrl.abort(), 5000);
+          const resp = await fetch('https://' + DEFAULT_PEER_CONFIG.host + '/health', { signal: ctrl.signal });
+          clearTimeout(to);
+          if (!resp.ok) throw new Error('bad status');
+          const data = await resp.json();
+          wrap.className = 'server-status online';
+          const n = data.rooms;
+          text.textContent = 'SERVER ONLINE' + (typeof n === 'number' ? ' \u00b7 ' + n + ' active room' + (n === 1 ? '' : 's') : '');
+        } catch (e) {
+          wrap.className = 'server-status offline';
+          text.textContent = 'SERVER UNREACHABLE \u2014 online play may not work';
+        }
+      }
 
       async function refreshRoomList() {
         const list = $('roomList'); const empty = $('roomListEmpty'); const err = $('roomListError');
@@ -3503,8 +3989,9 @@
             row.innerHTML =
               '<span class="r-code">' + escapeHtml(r.code) + '</span>' +
               '<span class="r-meta">' +
+              '<span class="r-tag">' + escapeHtml(r.hostName || 'Host') + '\u2019s room</span>' +
               '<span class="r-tag">Speed: ' + r.speed.toUpperCase() + '</span>' +
-              '<span class="r-tag">Mode: ' + (r.gameMode || 'standard').toUpperCase() + '</span>' +
+              '<span class="r-tag">' + modeLabel + '</span>' +
               '<span class="r-tag">' + (r.hasBots ? 'Bots' : 'Humans') + '</span>' +
               '</span>' +
               '<span class="r-players">' + r.playerCount + '/' + r.maxPlayers + '</span>';
@@ -3634,7 +4121,7 @@
       // ---- REPLAY DOWNLOAD (for local matches, via R key) ----
 
       // ---- LOCAL SETUP ----
-      const localUi = { count: 2, teams: false, boardSize: 'medium', speed: 'normal', winScore: 5, wallMode: 'solid', gameMode: 'standard', infiniteBoosts: false };
+      const localUi = { count: 2, teams: false, boardSize: settings.boardSize, speed: settings.speed, winScore: settings.winScore, wallMode: settings.wallMode, gameMode: settings.gameMode, infiniteBoosts: false };
       function initLocalSetup() {
         renderLocalPlayersPreview();
         renderLocalControls();
@@ -3734,6 +4221,7 @@
       $('localBack').addEventListener('click', () => switchScreen('menu'));
       $('localStart').addEventListener('click', () => {
         destroyActiveControllers();
+        closeReplay();
         const settings = fullSettingsFromUi(localUi);
         renderer.configure(settings.cols, settings.rows, BOARD_PRESETS[localUi.boardSize].cellSize);
         const half = Math.ceil(localUi.count / 2);
@@ -3746,7 +4234,7 @@
           const isBot = localBotFlags[i];
           const difficulty = isBot ? localBotDifficulty[i] : null;
           const name = isBot ? botDisplayName(roster, difficulty) : ('Player ' + (i + 1));
-          roster.push({ id, color: PALETTE[i], team, name, isBot, difficulty, infiniteBoost: localInfiniteBoostFlags[i] });
+          roster.push({ id, color: PALETTE[i], team, name, isBot, difficulty, infiniteBoost: localUi.gameMode === 'classic' ? false : localInfiniteBoostFlags[i] });
           if (isBot) {
             slots[id] = new BotController(id, localBotDifficulty[i]);
             controlsStripParts.push('P' + (i + 1) + ': BOT (' + localBotDifficulty[i].toUpperCase() + ')');
@@ -3765,7 +4253,7 @@
       });
 
       // ---- HOST SETUP ----
-      const hostUi = { maxPlayers: 2, teams: false, boardSize: 'medium', speed: 'normal', winScore: 5, wallMode: 'solid', gameMode: 'standard', infiniteBoosts: false };
+      const hostUi = { maxPlayers: 2, teams: false, boardSize: settings.boardSize, speed: settings.speed, winScore: settings.winScore, wallMode: settings.wallMode, gameMode: settings.gameMode, infiniteBoosts: false, publicRoom: settings.roomPublic };
       function initHostSetup() {
         makeSegmented($('hostRoomSize'), ROOM_SIZES.map(n => ({ value: n, label: n })), hostUi.maxPlayers, v => { hostUi.maxPlayers = v; $('hostTeamsField').style.display = v >= 4 ? 'block' : 'none'; if (v < 4) hostUi.teams = false, $('hostTeamsToggle').classList.remove('on'); });
         $('hostTeamsField').style.display = hostUi.maxPlayers >= 4 ? 'block' : 'none';
@@ -3779,6 +4267,9 @@
           $('hostInfiniteBoostsToggle').parentElement.parentElement.style.display = classic ? 'none' : 'block';
         });
         $('hostInfiniteBoostsToggle').classList.toggle('on', hostUi.infiniteBoosts);
+        $('hostPublicToggle').classList.toggle('on', hostUi.publicRoom);
+        const hn = $('hostName').value.trim();
+        if (!hn || hn === 'Player 1') $('hostName').value = settings.name || 'Player 1';
         renderControlEditor($('hostControlsEditor'), hostOwnScheme, (dir, key) => {
           for (const d of ['up', 'down', 'left', 'right', 'boost']) { if (d !== dir && hostOwnScheme[d][0] === key) return true; }
           return false;
@@ -3786,10 +4277,13 @@
       }
       $('hostTeamsToggle').addEventListener('click', () => { hostUi.teams = !hostUi.teams; $('hostTeamsToggle').classList.toggle('on', hostUi.teams); });
       $('hostInfiniteBoostsToggle').addEventListener('click', () => { hostUi.infiniteBoosts = !hostUi.infiniteBoosts; $('hostInfiniteBoostsToggle').classList.toggle('on', hostUi.infiniteBoosts); });
+      $('hostPublicToggle').addEventListener('click', () => { hostUi.publicRoom = !hostUi.publicRoom; $('hostPublicToggle').classList.toggle('on', hostUi.publicRoom); });
       $('hostCreate').addEventListener('click', () => hostCreateRoom(hostUi, $('hostName').value));
 
       // ---- JOIN SETUP ----
       function initJoinSetup() {
+        const jn = $('joinName').value.trim();
+        if (!jn || jn === 'Player') $('joinName').value = settings.name || 'Player';
         renderControlEditor($('joinControlsEditor'), joinOwnScheme, (dir, key) => {
           for (const d of ['up', 'down', 'left', 'right', 'boost']) { if (d !== dir && joinOwnScheme[d][0] === key) return true; }
           return false;
@@ -3808,7 +4302,13 @@
       // ---- LOBBY ----
       $('lobbyCopy').addEventListener('click', () => {
         const code = $('lobbyCode').textContent;
-        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).catch(() => { });
+        const btn = $('lobbyCopy');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(code).then(() => {
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = 'Copy'; }, 1200);
+          }).catch(() => { });
+        }
       });
       $('lobbyReady').addEventListener('click', () => {
         const nowReady = $('lobbyReady').textContent !== 'Ready \u2713';
@@ -3831,6 +4331,10 @@
       });
       window.addEventListener('keydown', (e) => {
         const key = e.key.toLowerCase();
+        if (key === 'f' && $('screen-game').style.display !== 'none' && !e.repeat) {
+          toggleFullscreen();
+          return;
+        }
         if (key === 'r' && $('screen-game').style.display !== 'none' && activeMatch && activeMatch.phase === 'matchover') {
           if (!hostConn) {
             activeMatch.resetMatch();
@@ -3911,6 +4415,7 @@
       let replayFrameIdx = 0;
       let replayPlaying = false;
       let replayTimer = null;
+      let replaySettings = null;
 
       function startReplayRecording() {
         replayFrames = [];
@@ -3936,7 +4441,7 @@
 
       function downloadReplay() {
         if (!replayFrames.length) return;
-        const settings = currentView && currentView.settings;
+        const settings = replaySettings || (currentView && currentView.settings);
         const data = JSON.stringify({
           version: 1,
           settings,
@@ -3969,6 +4474,7 @@
         replayFrames = data.frames;
         replayFrameIdx = 0;
         replayPlaying = false;
+        replaySettings = data.settings || null;
         if (replayTimer) clearInterval(replayTimer);
         replayTimer = null;
         var settings = data.settings;
@@ -3998,12 +4504,13 @@
             return {
               id: p.id, color: PALETTE[j % PALETTE.length], x: p.x, y: p.y,
               alive: p.alive, trail: p.trail, boosting: false,
-              _deadAt: p.alive ? null : performance.now(),
+              boostsLeft: p.boostsLeft,
             };
           }),
           shrinkTiles: f.shrinkTiles ? new Set(f.shrinkTiles) : null,
-          settings: currentView && currentView.settings,
+          settings: replaySettings,
         };
+        renderer.syncTrails(currentView);
       }
 
       function closeReplay() {
@@ -4011,6 +4518,7 @@
         if (replayTimer) clearInterval(replayTimer);
         replayTimer = null;
         replayFrames = [];
+        replaySettings = null;
         $('replayBar').style.display = 'none';
         currentView = null;
       }
