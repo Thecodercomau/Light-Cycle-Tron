@@ -3125,16 +3125,20 @@
             if (!p.alive && !wasDimmed) { this._dimTrail(p); this.trailDimmed.set(p.id, true); }
             else if (p.alive && wasDimmed) this.trailDimmed.set(p.id, false);
             // Per-player incremental paint: only segments added since the last sync.
+            // During live play the newest cell is deferred one tick so the trail
+            // visually trails BEHIND the interpolated head instead of popping ahead.
             const alive = p.alive;
+            const paintLimit = (p._interp === false) ? t.length : Math.max(1, t.length - 1);
             let start = this.trailDrawnCount.get(p.id) || 0;
-            for (let i = start; i < t.length; i++) {
+            if (start > paintLimit) start = paintLimit;
+            for (let i = start; i < paintLimit; i++) {
               const seg = t[i];
               ctx.globalAlpha = alive ? (seg.boost ? 0.4 : 0.85) : 0.7;
               ctx.fillStyle = (seg.boost && alive) ? darkenHex(p.color, 90) : p.color;
               ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
             }
             ctx.globalAlpha = 1;
-            this.trailDrawnCount.set(p.id, t.length);
+            this.trailDrawnCount.set(p.id, paintLimit);
           }
         }
         _dimTrail(p) {
@@ -3144,20 +3148,30 @@
           for (const seg of p.trail) ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
           ctx.globalAlpha = 1;
         }
-        // Per-frame work is now just two blits plus up to 8 glowing heads.
+        // Per-frame work is two blits plus up to 8 glowing heads, drawn at a
+        // smoothly interpolated position between the previous and current tick
+        // so movement reads at display framerate instead of 14 Hz stop-motion.
         draw(view) {
           if (!view) return;
-          const ctx = this.ctx, cs = this.cellSize;
+          const ctx = this.ctx, cs = this.cellSize, now = performance.now();
           ctx.globalAlpha = 1;
           ctx.drawImage(this.gridCanvas, 0, 0);
           ctx.drawImage(this.trailCanvas, 0, 0);
           for (const p of view.players) {
             if (!p.alive) continue;
+            let ix = p.x, iy = p.y;
+            if (typeof p._prevX === 'number') {
+              const tickMs = (p._tickMs && p._tickMs > 0) ? p._tickMs : 70;
+              let t = (now - (p._tickT || 0)) / tickMs;
+              if (t < 0) t = 0; else if (t > 1) t = 1;
+              ix = p._prevX + (p.x - p._prevX) * t;
+              iy = p._prevY + (p.y - p._prevY) * t;
+            }
             const boosting = p.boostTicks > 0 || p.boosting;
             ctx.save();
             ctx.shadowColor = p.color; ctx.shadowBlur = boosting ? 22 : 14;
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(p.x * cs + 1, p.y * cs + 1, cs - 2, cs - 2);
+            ctx.fillRect(ix * cs + 1, iy * cs + 1, cs - 2, cs - 2);
             ctx.restore();
           }
         }
@@ -3293,6 +3307,9 @@
         }
         beginCountdown() {
           this.sim.reset();
+          // No interpolation during countdown: heads hold at spawn and the whole
+          // spawn-cell trail is painted so the starting square stays visible.
+          this.sim.players.forEach(p => { p._interp = false; p._prevX = p._prevY = null; p._tickT = 0; });
           renderer.syncTrails(this.sim);
           $('hudShrink').textContent = '';
           this.roster.forEach(r => updateBoostChip(r.id, BOOST_MAX));
@@ -3403,6 +3420,10 @@
             return;
           }
           if (this.phase === 'playing') {
+            // Stamp the pre-move positions and tick timestamp so the renderer can
+            // smoothly interpolate heads between tick boundaries at display rate.
+            const nowMs = performance.now();
+            this.sim.players.forEach(p => { p._prevX = p.x; p._prevY = p.y; p._tickT = nowMs; p._tickMs = this.settings.tickMs; p._interp = true; });
             const intents = {}, boosts = {};
             this.roster.forEach(r => {
               const slot = this.slots[r.id];
@@ -3464,9 +3485,11 @@
           renderer.syncTrails(this);
         }
         onFrame(msg) {
+          const nowMs = performance.now();
           for (const pd of msg.players) {
             const vp = this.byId[pd.id];
             if (!vp) continue;
+            vp._prevX = vp.x; vp._prevY = vp.y; vp._tickT = nowMs; vp._tickMs = this.settings.tickMs; vp._interp = true;
             vp.x = pd.x; vp.y = pd.y; vp.alive = pd.alive; vp.boosting = !!pd.boosting;
             if (pd.alive) {
               if (pd.newSegs && pd.newSegs.length) pd.newSegs.forEach(seg => vp.trail.push(seg));
@@ -3491,6 +3514,7 @@
               const s = spawns[i] || { x: -10, y: -10 };
               p.trail = [{ x: s.x, y: s.y, boost: false }];
               p.x = s.x; p.y = s.y; p.alive = true; p.boosting = false;
+              p._interp = false; p._prevX = p._prevY = null; p._tickT = 0;
             });
             renderer.syncTrails(this);
             $('hudShrink').textContent = '';
@@ -4847,7 +4871,7 @@
             return {
               id: p.id, color: PALETTE[j % PALETTE.length], x: p.x, y: p.y,
               alive: p.alive, trail: p.trail, boosting: false,
-              boostsLeft: p.boostsLeft,
+              boostsLeft: p.boostsLeft, _interp: false,
             };
           }),
           shrinkTiles: f.shrinkTiles ? new Set(f.shrinkTiles) : null,
