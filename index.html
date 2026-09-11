@@ -3051,6 +3051,9 @@
           this.gridCtx = this.gridCanvas.getContext('2d');
           this.trailCanvas = document.createElement('canvas');
           this.trailCtx = this.trailCanvas.getContext('2d');
+          this.trailDrawnCount = new Map();
+          this.trailDimmed = new Map();
+          this.shrinkPainted = 0;
         }
         configure(cols, rows, cellSize) {
           this.cols = cols; this.rows = rows; this.cellSize = cellSize;
@@ -3058,6 +3061,9 @@
           this.canvas.width = w; this.canvas.height = h;
           this.gridCanvas.width = w; this.gridCanvas.height = h;
           this.trailCanvas.width = w; this.trailCanvas.height = h;
+          this.trailDrawnCount.clear();
+          this.trailDimmed.clear();
+          this.shrinkPainted = 0;
           this._buildGrid();
         }
         _buildGrid() {
@@ -3085,29 +3091,57 @@
             g.beginPath(); g.moveTo(0, y * cs + 0.5); g.lineTo(this.gridCanvas.width, y * cs + 0.5); g.stroke();
           }
         }
-        // Rebuilds the static trail / wall layer. Call once per sim tick (never on
-        // every rAF) -- this replaces the old "redraw every occupied cell 60px/s".
+        // Rebuilds the static trail / wall layer. Runs once per sim tick -- and only
+        // paints segments that are NEW since the last call, so long matches stay cheap.
+        // A fresh round / view is auto-detected (tracked trails shrank) and rebuilt.
         syncTrails(view) {
-          const ctx = this.trailCtx, cs = this.cellSize;
-          ctx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
           if (!view) return;
-          if (view.shrinkTiles) {
+          const ctx = this.trailCtx, cs = this.cellSize;
+          let needsReset = false;
+          for (const [id, n] of this.trailDrawnCount) {
+            const p = view.players ? view.players.find(q => q.id === id) : null;
+            if (!p || p.trail.length < n) { needsReset = true; break; }
+          }
+          if (needsReset) {
+            ctx.clearRect(0, 0, this.trailCanvas.width, this.trailCanvas.height);
+            this.trailDrawnCount.clear();
+            this.trailDimmed.clear();
+            this.shrinkPainted = 0;
+          }
+          // Shrink tiles: paint only newly announced cells (Set insertion order).
+          if (view.shrinkTiles && view.shrinkTiles.size) {
+            const keys = Array.from(view.shrinkTiles);
             ctx.fillStyle = 'rgba(255,20,50,0.28)';
-            for (const key of view.shrinkTiles) {
-              const i = key.indexOf(',');
-              const sx = parseInt(key, 10), sy = parseInt(key.slice(i + 1), 10);
-              ctx.fillRect(sx * cs + 1, sy * cs + 1, cs - 2, cs - 2);
+            for (let i = this.shrinkPainted; i < keys.length; i++) {
+              const idx = keys[i].indexOf(',');
+              ctx.fillRect(parseInt(keys[i], 10) * cs + 1, parseInt(keys[i].slice(idx + 1), 10) * cs + 1, cs - 2, cs - 2);
             }
+            this.shrinkPainted = keys.length;
           }
           for (const p of view.players || []) {
-            const dead = !p.alive;
-            const dark = darkenHex(p.color, 90);
-            for (const seg of p.trail) {
-              ctx.globalAlpha = dead ? 0.22 : (seg.boost ? 0.4 : 0.85);
-              ctx.fillStyle = (seg.boost && !dead) ? dark : p.color;
+            const t = p.trail;
+            if (!t || !t.length) continue;
+            const wasDimmed = this.trailDimmed.get(p.id);
+            if (!p.alive && !wasDimmed) { this._dimTrail(p); this.trailDimmed.set(p.id, true); }
+            else if (p.alive && wasDimmed) this.trailDimmed.set(p.id, false);
+            // Per-player incremental paint: only segments added since the last sync.
+            const alive = p.alive;
+            let start = this.trailDrawnCount.get(p.id) || 0;
+            for (let i = start; i < t.length; i++) {
+              const seg = t[i];
+              ctx.globalAlpha = alive ? (seg.boost ? 0.4 : 0.85) : 0.7;
+              ctx.fillStyle = (seg.boost && alive) ? darkenHex(p.color, 90) : p.color;
               ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
             }
+            ctx.globalAlpha = 1;
+            this.trailDrawnCount.set(p.id, t.length);
           }
+        }
+        _dimTrail(p) {
+          const ctx = this.trailCtx, cs = this.cellSize;
+          ctx.globalAlpha = 0.55;
+          ctx.fillStyle = '#02040a';
+          for (const seg of p.trail) ctx.fillRect(seg.x * cs + 1, seg.y * cs + 1, cs - 2, cs - 2);
           ctx.globalAlpha = 1;
         }
         // Per-frame work is now just two blits plus up to 8 glowing heads.
@@ -3251,9 +3285,12 @@
           this._acc = 0;
           startReplayRecording();
           this.beginCountdown();
-          requestAnimationFrame(this._loop);
+          this._loop();
         }
-        stop() { this.running = false; }
+        stop() {
+          this.running = false;
+          if (this._loopTimer) { clearTimeout(this._loopTimer); this._loopTimer = null; }
+        }
         beginCountdown() {
           this.sim.reset();
           renderer.syncTrails(this.sim);
@@ -3387,13 +3424,25 @@
             return;
           }
         }
-        _loop(now) {
+        // Precise fixed-timestep driver, independent of the renderer's rAF loop.
+        // Ticks fire on a self-correcting wall-clock schedule so a pressed key is
+        // applied at the true tick boundary even when frames are slow. Overdue time
+        // is dropped (never run as a burst) so the action never teleports after a
+        // stall -- keeping input crisp instead of letting a render hitch stretch it.
+        _loop() {
           if (!this.running) return;
-          requestAnimationFrame(this._loop);
-          let dt = now - this._lastTime; this._lastTime = now;
-          if (dt > 250) dt = 250;
-          this._acc += dt;
-          while (this._acc >= this.settings.tickMs) { this._acc -= this.settings.tickMs; this._tick(); }
+          const now = performance.now();
+          this._acc += Math.min(now - this._lastTime, 250);
+          this._lastTime = now;
+          let guard = 0;
+          while (this._acc >= this.settings.tickMs && guard < 3) {
+            this._acc -= this.settings.tickMs;
+            this._tick();
+            guard++;
+          }
+          if (this._acc >= this.settings.tickMs) this._acc = 0;
+          const wait = Math.max(1, Math.round(this.settings.tickMs - this._acc) - 1);
+          this._loopTimer = setTimeout(this._loop, wait);
         }
       }
 
